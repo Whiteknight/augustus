@@ -735,6 +735,8 @@ static void draw_background(void)
             }
         } else if (btype == BUILDING_PALISADE) {
             window_building_draw_palisade(&context);
+        } else if (btype == BUILDING_DEPOT) {
+            window_building_draw_depot(&context);
         }
     } else if (context.type == BUILDING_INFO_LEGION) {
         window_building_draw_legion_info(&context);
