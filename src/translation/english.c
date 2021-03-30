@@ -219,6 +219,10 @@ static translation_string all_strings[] = {
     {TR_BUILDING_WORK_CAMP_DESC, "Laborers gather here to transport materials to construction sites." },
     {TR_BUILDING_DEPOT, "Cart depot"},
     {TR_BUILDING_DEPOT_DESC, "Placeholder"},
+    {TR_BUILDING_NONE, "None"},
+    {TR_ORDER_CONDITION_ALWAYS, "Always"},
+    {TR_DEPOST_SELECT_SOURCE, "Select source storage" },
+    {TR_DEPOST_SELECT_DESTINATION, "Select destination storage" },
     {TR_HEADER_HOUSING, "Housing"},
     {TR_ADVISOR_HOUSING_ROOM, "City housing has room available for"},
     {TR_ADVISOR_HOUSING_NO_ROOM, "There is no room available in city housing."},
@@ -771,7 +775,9 @@ static translation_string all_strings[] = {
     {TR_HOTKEY_BUILD_WHEAT_FARM, "Wheat farm" },
     {TR_HOTKEY_SHOW_MESSAGES, "Show messages"},
     {TR_HOTKEY_SHOW_EMPIRE_MAP, "Show empire map"},
-    {TR_TOGGLE_GRID, "Toggle grid"}
+    {TR_TOGGLE_GRID, "Toggle grid"},
+    {TR_BUILDING_GRANARY, "Granary" },
+    {TR_BUILDING_WAREHOUSE, "Warehouse"}
 };
 
 void translation_english(const translation_string **strings, int *num_strings)
