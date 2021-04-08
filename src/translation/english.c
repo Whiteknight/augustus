@@ -777,7 +777,10 @@ static translation_string all_strings[] = {
     {TR_HOTKEY_SHOW_EMPIRE_MAP, "Show empire map"},
     {TR_TOGGLE_GRID, "Toggle grid"},
     {TR_BUILDING_GRANARY, "Granary" },
-    {TR_BUILDING_WAREHOUSE, "Warehouse"}
+    {TR_BUILDING_WAREHOUSE, "Warehouse"},
+    {TR_FIGURE_INFO_DEPOT_DELIVER, "Deliver"},
+    {TR_FIGURE_INFO_DEPOT_RECALL, "Recall"},
+    {TR_FIGURE_INFO_DEPOT_RETURNING, "Returning"}
 };
 
 void translation_english(const translation_string **strings, int *num_strings)
