@@ -156,8 +156,6 @@ static generic_button primary_product_producer_button_stockpiling[] = {
     {360, 3, 24, 24, button_stockpiling, button_none, 0, 0}
 };
 
-
-
 static struct {
     int focus_button_id;
     int orders_focus_button_id;
@@ -174,8 +172,6 @@ static struct {
     int primary_product_stockpiling_id;
     int image_button_focus_id;
 } data;
-
-
 
 uint8_t warehouse_full_button_text[] = "32";
 uint8_t warehouse_3quarters_button_text[] = "24";
