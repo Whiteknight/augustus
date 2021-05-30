@@ -67,7 +67,7 @@ augustus_building_properties_mapping augustus_building_properties[AUGUSTUS_BUILD
     {BUILDING_ROOFED_GARDEN_WALL, { 1, 1, 0, 0, 0 }, "Aesthetics", "R Garden Wall 01"},
     {BUILDING_GARDEN_WALL_GATE, { 1, 1, 0, 0, 0 }, "Aesthetics", "Garden Gate"},
     {BUILDING_PALISADE, {1,1,0,0,0}, "Military_Buildings", "Pal Wall C 01"},
-    {BUILDING_DEPOT, {1,0,0,0,0}, "Aesthetics", "ornamental fir" },
+    {BUILDING_DEPOT, {2,0,0,0,0}, "Econ_Logistics", "Cart Depot N OFF"},
 };
 
 void init_augustus_building_properties()
