@@ -376,7 +376,7 @@ int building_warehouse_for_storing(int src_building_id, int x, int y, int resour
     int min_dist = INFINITE;
     int min_building_id = 0;
     for (building *b = building_first_of_type(BUILDING_WAREHOUSE); b; b = b->next_of_type) {
-        if (b->id == src_building_id || b->road_network_id != road_network_id ||
+        if (b->id == src_building_id || !building_has_road_network_id(b, road_network_id) ||
             !building_warehouse_accepts_storage(b, resource, understaffed)) {
             continue;
         }
@@ -451,7 +451,7 @@ int building_warehouse_with_resource(int src_building_id, int x, int y, int reso
         if (b->state != BUILDING_STATE_IN_USE) {
             continue;
         }
-        if (!b->has_road_access || b->distance_from_entry <= 0 || b->road_network_id != road_network_id) {
+        if (!b->has_road_access || b->distance_from_entry <= 0 || !building_has_road_network_id(b, road_network_id)) {
             continue;
         }
 
@@ -501,7 +501,7 @@ static int determine_granary_accept_foods(int resources[RESOURCE_MAX_FOOD], int 
     }
     int can_accept = 0;
     for (building *b = building_first_of_type(BUILDING_GRANARY); b; b = b->next_of_type) {
-        if (b->state != BUILDING_STATE_IN_USE || !b->has_road_access || road_network != b->road_network_id) {
+        if (b->state != BUILDING_STATE_IN_USE || !b->has_road_access || !building_has_road_network_id(b, road_network)) {
             continue;
         }
         int pct_workers = calc_percentage(b->num_workers, model_get_building(b->type)->laborers);
@@ -530,7 +530,7 @@ static int determine_granary_get_foods(int resources[RESOURCE_MAX_FOOD], int roa
     }
     int can_get = 0;
     for (building *b = building_first_of_type(BUILDING_GRANARY); b; b = b->next_of_type) {
-        if (b->state != BUILDING_STATE_IN_USE || !b->has_road_access || road_network != b->road_network_id) {
+        if (b->state != BUILDING_STATE_IN_USE || !b->has_road_access || !building_has_road_network_id(b, road_network)) {
             continue;
         }
         int pct_workers = calc_percentage(b->num_workers, model_get_building(b->type)->laborers);
@@ -621,9 +621,10 @@ int building_warehouse_determine_worker_task(building *warehouse, int *resource)
     // deliver weapons to barracks
     if ((building_count_active(BUILDING_BARRACKS) || building_count_active(BUILDING_GRAND_TEMPLE_MARS)) &&
         !city_resource_is_stockpiled(RESOURCE_WEAPONS)) {
-        building *barracks = building_get(building_get_barracks_for_weapon(warehouse->x, warehouse->y, RESOURCE_WEAPONS, warehouse->road_network_id, warehouse->distance_from_entry, 0));
+        building *barracks = building_get(building_get_barracks_for_weapon(warehouse->x, warehouse->y, RESOURCE_WEAPONS, warehouse->road_network_ids[0], warehouse->distance_from_entry, 0));
         if (barracks->loads_stored < MAX_WEAPONS_BARRACKS &&
-            warehouse->road_network_id == barracks->road_network_id) {
+            // WK TODO: barracks may have multiple road_network_ids
+            building_has_road_network_id(warehouse, barracks->road_network_ids[0])) {
             space = warehouse;
             for (int i = 0; i < 8; i++) {
                 space = building_next(space);
@@ -643,7 +644,7 @@ int building_warehouse_determine_worker_task(building *warehouse, int *resource)
             if (!city_resource_is_stockpiled(space->subtype.warehouse_resource_id)) {
                 int workshop_type = resource_to_workshop_type(space->subtype.warehouse_resource_id);
                 if (workshop_type != WORKSHOP_NONE && city_resource_has_workshop_with_room(workshop_type) &&
-                    building_has_workshop_for_raw_material_with_room(workshop_type, warehouse->road_network_id)) {
+                    building_has_workshop_for_raw_material_with_room(workshop_type, warehouse->road_network_ids[0])) {
                     *resource = space->subtype.warehouse_resource_id;
                     return WAREHOUSE_TASK_DELIVERING;
                 }
@@ -652,7 +653,7 @@ int building_warehouse_determine_worker_task(building *warehouse, int *resource)
     }
     // deliver food to getting granary
     int granary_resources[RESOURCE_MAX_FOOD];
-    if (determine_granary_get_foods(granary_resources, warehouse->road_network_id)) {
+    if (determine_granary_get_foods(granary_resources, warehouse->road_network_ids[0])) {
         space = warehouse;
         for (int i = 0; i < 8; i++) {
             space = building_next(space);
@@ -663,7 +664,7 @@ int building_warehouse_determine_worker_task(building *warehouse, int *resource)
         }
     }
     // deliver food to accepting granary
-    if (determine_granary_accept_foods(granary_resources, warehouse->road_network_id) && !scenario_property_rome_supplies_wheat()) {
+    if (determine_granary_accept_foods(granary_resources, warehouse->road_network_ids[0]) && !scenario_property_rome_supplies_wheat()) {
         space = warehouse;
         for (int i = 0; i < 8; i++) {
             space = building_next(space);

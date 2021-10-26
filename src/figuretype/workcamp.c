@@ -91,12 +91,12 @@ void figure_workcamp_worker_action(figure *f)
                 if (city_resource_is_stockpiled(resource)) {
                     continue;
                 }
-                monument_id = building_monument_get_monument(b->x, b->y, resource, b->road_network_id, b->distance_from_entry, 0);
+                monument_id = building_monument_get_monument(b->x, b->y, resource, b->road_network_ids[0], b->distance_from_entry, 0);
                 if (!monument_id) {
                     continue;
                 }
                 warehouse_id = building_warehouse_with_resource(f->building_id, f->x, f->y, resource,
-                    b->distance_from_entry, b->road_network_id, 0, &dst);
+                    b->distance_from_entry, b->road_network_ids[0], 0, &dst);
                 if (!warehouse_id) {
                     continue;
                 }
@@ -118,7 +118,7 @@ void figure_workcamp_worker_action(figure *f)
             if (f->direction == DIR_FIGURE_AT_DESTINATION) {
                 building_monument_remove_delivery(f->id);
                 warehouse_id = f->destination_building_id;
-                monument_id = building_monument_get_monument(b->x, b->y, f->collecting_item_id, b->road_network_id, b->distance_from_entry, &dst);
+                monument_id = building_monument_get_monument(b->x, b->y, f->collecting_item_id, b->road_network_ids[0], b->distance_from_entry, &dst);
                 f->action_state = FIGURE_ACTION_205_WORK_CAMP_WORKER_GOING_TO_MONUMENT;
                 f->destination_building_id = monument_id;
                 f->destination_x = dst.x;
@@ -268,7 +268,7 @@ void figure_workcamp_engineer_action(figure *f)
             if (!building_monument_has_unfinished_monuments()) {
                 f->state = FIGURE_STATE_DEAD;
             } else {
-                int monument_id = building_monument_get_monument(b->x, b->y, RESOURCE_NONE, b->road_network_id, b->distance_from_entry, &dst);
+                int monument_id = building_monument_get_monument(b->x, b->y, RESOURCE_NONE, b->road_network_ids[0], b->distance_from_entry, &dst);
                 if (monument_id && !building_monument_is_construction_halted(building_get(monument_id))) {
                     f->destination_building_id = monument_id;
                     f->destination_x = dst.x;

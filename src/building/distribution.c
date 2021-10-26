@@ -87,7 +87,7 @@ static int is_invalid_destination(building *b, int permission, int road_network)
 {
     return (b->state != BUILDING_STATE_IN_USE ||
         !b->has_road_access || b->distance_from_entry <= 0 ||
-        b->road_network_id != road_network ||
+        !building_has_road_network_id(b, road_network) ||
         !building_storage_get_permission(permission, b));
 }
 

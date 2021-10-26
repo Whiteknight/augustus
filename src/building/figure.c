@@ -1503,7 +1503,7 @@ static void spawn_figure_architect_guild(building *b)
         if (has_figure_of_type(b, FIGURE_WORK_CAMP_ARCHITECT)) {
             return;
         }
-        if (building_monument_get_monument(road.x, road.y, RESOURCE_NONE, b->road_network_id, b->distance_from_entry, 0)) {
+        if (building_monument_get_monument(road.x, road.y, RESOURCE_NONE, b->road_network_ids[0], b->distance_from_entry, 0)) {
             figure *f = figure_create(FIGURE_WORK_CAMP_ARCHITECT, road.x, road.y, DIR_4_BOTTOM);
             f->action_state = FIGURE_ACTION_206_WORK_CAMP_ARCHITECT_CREATED;
             b->figure_id = f->id;

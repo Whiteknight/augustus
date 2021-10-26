@@ -284,7 +284,7 @@ int building_monument_get_monument(int x, int y, int resource, int road_network_
                 continue;
             }
             if (!map_has_road_access(b->x, b->y, b->size, 0) ||
-                b->distance_from_entry <= 0 || b->road_network_id != road_network_id) {
+                b->distance_from_entry <= 0 || !building_has_road_network_id(b, road_network_id)) {
                 continue;
             }
             int dist = calc_maximum_distance(b->x, b->y, x, y);

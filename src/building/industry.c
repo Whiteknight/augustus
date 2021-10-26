@@ -331,7 +331,7 @@ int building_has_workshop_for_raw_material_with_room(int workshop_type, int road
     building_type type = OUTPUT_TYPE_TO_INDUSTRY[workshop_type];
     for (building *b = building_first_of_type(type); b; b = b->next_of_type) {
         if (b->state == BUILDING_STATE_IN_USE && b->has_road_access && b->distance_from_entry > 0 &&
-            b->road_network_id == road_network_id && b->loads_stored < 2) {
+            building_has_road_network_id(b, road_network_id) && b->loads_stored < 2) {
             return 1;
         }
     }
@@ -353,7 +353,7 @@ int building_get_workshop_for_raw_material_with_room(int x, int y,
     building_type type = OUTPUT_TYPE_TO_INDUSTRY[output_type];
     for (building *b = building_first_of_type(type); b; b = b->next_of_type) {
         if (b->state != BUILDING_STATE_IN_USE || !b->has_road_access || b->distance_from_entry <= 0 ||
-            b->road_network_id != road_network_id || b->loads_stored >= 2) {
+            !building_has_road_network_id(b, road_network_id) || b->loads_stored >= 2) {
             continue;
         }
         int dist = calc_maximum_distance(b->x, b->y, x, y);
@@ -386,7 +386,7 @@ int building_get_workshop_for_raw_material(int x, int y, int resource, int road_
     building_type type = OUTPUT_TYPE_TO_INDUSTRY[output_type];
     for (building *b = building_first_of_type(type); b; b = b->next_of_type) {
         if (b->state != BUILDING_STATE_IN_USE ||
-            !b->has_road_access || b->distance_from_entry <= 0 || b->road_network_id != road_network_id) {
+            !b->has_road_access || b->distance_from_entry <= 0 || !building_has_road_network_id(b, road_network_id)) {
             continue;
         }
         int dist = 10 * b->loads_stored +

@@ -1,5 +1,7 @@
 #include "maintenance.h"
 
+#include <string.h>
+
 #include "building/building.h"
 #include "building/destruction.h"
 #include "building/list.h"
@@ -226,6 +228,30 @@ void building_maintenance_check_fire_collapse(void)
     }
 }
 
+static void update_road_access(building *b, int road_grid_offset, int x_road, int y_road)
+{
+    if (road_grid_offset >= 0) {
+        b->road_network_ids[0] = map_road_network_get(road_grid_offset);
+        b->num_road_network_ids = 1;
+        b->distance_from_entry = map_routing_distance(road_grid_offset);
+        b->road_access_x = x_road;
+        b->road_access_y = y_road;
+    }
+}
+
+static void update_road_access_struct(building *b, road_grid_offsets *road_grid_offsets, int x_road, int y_road)
+{
+    if (road_grid_offsets && road_grid_offsets->num_road_grid_offsets > 0) {
+        for (int i = 0; i < road_grid_offsets->num_road_grid_offsets; i++) {
+            b->road_network_ids[i] = map_road_network_get(road_grid_offsets->road_grid_offsets[i]);
+        }
+        b->num_road_network_ids = road_grid_offsets->num_road_grid_offsets;
+        b->distance_from_entry = map_routing_distance(road_grid_offsets->road_grid_offsets[0]);
+        b->road_access_x = x_road;
+        b->road_access_y = y_road;
+    }
+}
+
 void building_maintenance_check_rome_access(void)
 {
     const map_tile *entry_point = city_map_entry_point();
@@ -273,16 +299,12 @@ void building_maintenance_check_rome_access(void)
             b->distance_from_entry = 0;
             int x_road, y_road;
             int road_grid_offset = map_road_to_largest_network_rotation(b->subtype.orientation, b->x, b->y, 3, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else if (b->type == BUILDING_WAREHOUSE_SPACE) {
             b->distance_from_entry = 0;
             building *main_building = building_main(b);
-            b->road_network_id = main_building->road_network_id;
+            memcpy(&(b->road_network_ids), &(main_building->road_network_ids), main_building->num_road_network_ids * sizeof(int));
+            b->num_road_network_ids = main_building->num_road_network_ids;
             b->distance_from_entry = main_building->distance_from_entry;
             b->road_access_x = main_building->road_access_x;
             b->road_access_y = main_building->road_access_y;
@@ -291,65 +313,35 @@ void building_maintenance_check_rome_access(void)
             int x_road, y_road;
             int rotated = b->subtype.orientation;
             int road_grid_offset = map_road_to_largest_network_hippodrome(b->x, b->y, &x_road, &y_road, rotated);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else if ((b->type >= BUILDING_GRAND_TEMPLE_CERES && b->type <= BUILDING_GRAND_TEMPLE_VENUS) ||
             (b->type == BUILDING_PANTHEON)) {
             b->distance_from_entry = 0;
             int x_road, y_road;
             int road_grid_offset = map_road_to_largest_network_grand_temple(b->x, b->y, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else if (b->type == BUILDING_COLOSSEUM) {
             b->distance_from_entry = 0;
             int x_road, y_road;
             int road_grid_offset = map_road_to_largest_network_colosseum(b->x, b->y, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else if (b->type == BUILDING_LIGHTHOUSE || b->type == BUILDING_LARGE_MAUSOLEUM ||
             b->type == BUILDING_NYMPHAEUM ||
             (b->type >= BUILDING_LARGE_TEMPLE_CERES && b->type <= BUILDING_LARGE_TEMPLE_VENUS)) {
             b->distance_from_entry = 0;
             int x_road, y_road;
             int road_grid_offset = map_road_to_largest_network_lighthouse(b->x, b->y, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else if (b->type == BUILDING_CARAVANSERAI) {
             b->distance_from_entry = 0;
             int x_road, y_road;
             int road_grid_offset = map_road_to_largest_network_caravanserai(b->x, b->y, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            update_road_access(b, road_grid_offset, x_road, y_road);
         } else { // other building
             b->distance_from_entry = 0;
             int x_road, y_road;
-            int road_grid_offset = map_road_to_largest_network(b->x, b->y, b->size, &x_road, &y_road);
-            if (road_grid_offset >= 0) {
-                b->road_network_id = map_road_network_get(road_grid_offset);
-                b->distance_from_entry = map_routing_distance(road_grid_offset);
-                b->road_access_x = x_road;
-                b->road_access_y = y_road;
-            }
+            road_grid_offsets *road_grid_offsets = map_road_to_largest_network(b->x, b->y, b->size, &x_road, &y_road);
+            update_road_access_struct(b, road_grid_offsets, x_road, y_road);
         }
     }
     const map_tile *exit_point = city_map_exit_point();

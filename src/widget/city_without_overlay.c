@@ -24,12 +24,14 @@
 #include "figure/formation_legion.h"
 #include "game/resource.h"
 #include "graphics/image.h"
+#include "graphics/text.h"
 #include "graphics/window.h"
 #include "map/building.h"
 #include "map/figure.h"
 #include "map/grid.h"
 #include "map/image.h"
 #include "map/property.h"
+#include "map/road_network.h"
 #include "map/sprite.h"
 #include "map/terrain.h"
 #include "sound/city.h"
@@ -146,6 +148,10 @@ static void draw_footprint(int x, int y, int grid_offset)
         }
         if (map_terrain_is(grid_offset, TERRAIN_GARDEN)) {
             sound_city_mark_building_view(BUILDING_GARDENS, 0, SOUND_DIRECTION_CENTER);
+        }
+        int road_network_id = map_road_network_get(grid_offset);
+        if (road_network_id) {
+            text_draw_number(road_network_id, ' ', "", x, y, FONT_SMALL_PLAIN);
         }
         int image_id = map_image_at(grid_offset);
         if (map_property_is_constructing(grid_offset)) { //&&

@@ -33,7 +33,8 @@ typedef struct building {
         short market_goods;
         short barracks_priority;
     } subtype;
-    unsigned char road_network_id;
+    unsigned char road_network_ids[16];
+    short num_road_network_ids;
     unsigned short created_sequence;
     short houses_covered;
     short percentage_houses_covered;
@@ -89,7 +90,7 @@ typedef struct building {
             short wine_demand;
             unsigned char fetch_inventory_id;
             unsigned char is_mess_hall;
-        } market;
+        } market; 
         struct {
             short resource_stored[16];
         } granary;
@@ -236,6 +237,8 @@ unsigned char building_stockpiling_toggle(building *b);
 int building_get_tourism(const building* b);
 
 int building_get_levy(const building *b);
+
+int building_has_road_network_id(const building *b, int road_network_id);
 
 void building_totals_add_corrupted_house(int unfixable);
 

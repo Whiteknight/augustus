@@ -4,6 +4,11 @@
 #include "building/roadblock.h"
 #include "map/point.h"
 
+typedef struct road_grid_offsets {
+    int road_grid_offsets[16];
+    int num_road_grid_offsets;
+} road_grid_offsets;
+
 int map_has_road_access(int x, int y, int size, map_point *road);
 
 int map_has_road_access_rotation(int rotation, int x, int y, int size, map_point *road);
@@ -26,9 +31,9 @@ int map_closest_road_within_radius(int x, int y, int size, int radius, int *x_ro
 
 int map_closest_reachable_road_within_radius(int x, int y, int size, int radius, int *x_road, int *y_road);
 
-int map_road_to_largest_network_rotation(int rotation, int x, int y, int size, int *x_road, int *y_road);
+road_grid_offsets *map_road_to_largest_network_rotation(int rotation, int x, int y, int size, int *x_road, int *y_road);
 
-int map_road_to_largest_network(int x, int y, int size, int *x_road, int *y_road);
+road_grid_offsets *map_road_to_largest_network(int x, int y, int size, int *x_road, int *y_road);
 
 int map_road_to_largest_network_hippodrome(int x, int y, int *x_road, int *y_road, int rotated);
 

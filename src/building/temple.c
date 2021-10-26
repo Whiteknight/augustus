@@ -16,7 +16,8 @@ int building_temple_get_storage_destination(building *temple)
             return 0;
         }
         building *grand_temple = building_get(building_monument_get_venus_gt());
-        if (grand_temple->id != 0 && grand_temple->road_network_id == temple->road_network_id &&
+        // WK TODO: temple may have multiple road_network_ids
+        if (grand_temple->id != 0 && building_has_road_network_id(grand_temple, temple->road_network_ids[0]) &&
             temple->data.market.inventory[INVENTORY_WINE] < BASELINE_STOCK && grand_temple->loads_stored > 0) {
             temple->data.market.fetch_inventory_id = INVENTORY_WINE;
             return grand_temple->id;
@@ -39,7 +40,7 @@ int building_temple_get_storage_destination(building *temple)
 
     inventory_storage_info data[INVENTORY_MAX];
     if (!building_distribution_get_inventory_storages(data, temple->type,
-            temple->road_network_id, temple->road_access_x, temple->road_access_y, INFINITE)) {
+            temple->road_network_ids[0], temple->road_access_x, temple->road_access_y, INFINITE)) {
         return 0;
     }
 

@@ -21,7 +21,7 @@ static int tower_sentry_request = 0;
 static int is_valid_destination(building *b, int road_network_id)
 {
     return b->state == BUILDING_STATE_IN_USE && map_has_road_access(b->x, b->y, b->size, 0) &&
-        b->distance_from_entry > 0 && b->road_network_id == road_network_id &&
+        b->distance_from_entry > 0 && building_has_road_network_id(b, road_network_id) &&
         b->loads_stored < MAX_WEAPONS_BARRACKS;
 }
 
@@ -158,7 +158,9 @@ static building *get_unmanned_tower(building_type type, building *barracks, map_
 {
     for (building *b = building_first_of_type(type); b; b = b->next_of_type) {
         if (b->state == BUILDING_STATE_IN_USE && b->num_workers > 0 &&
-            !b->figure_id && !b->figure_id4 && (b->road_network_id == barracks->road_network_id || config_get(CONFIG_GP_CH_TOWER_SENTRIES_GO_OFFROAD))) {
+            !b->figure_id && !b->figure_id4 && 
+            // WK TODO: barracks may have multiple road network ids
+            (building_has_road_network_id(b, barracks->road_network_ids[0]) || config_get(CONFIG_GP_CH_TOWER_SENTRIES_GO_OFFROAD))) {
             if (map_has_road_access(b->x, b->y, b->size, road)) {
                 return b;
             }

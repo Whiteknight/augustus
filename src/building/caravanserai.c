@@ -49,7 +49,7 @@ int building_caravanserai_get_storage_destination(building *caravanserai)
     }
     inventory_storage_info data[INVENTORY_MAX];
     if (!building_distribution_get_inventory_storages(data, BUILDING_CARAVANSERAI,
-                                                      caravanserai->road_network_id, caravanserai->road_access_x, caravanserai->road_access_y, INFINITE)) {
+                                                      caravanserai->road_network_ids[0], caravanserai->road_access_x, caravanserai->road_access_y, INFINITE)) {
         return 0;
     }
     // Prefer whichever food we don't have

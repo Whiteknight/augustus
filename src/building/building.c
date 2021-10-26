@@ -582,6 +582,19 @@ int building_get_tourism(const building *b)
     return b->is_tourism_venue;
 }
 
+int building_has_road_network_id(const building *b, int road_network_id)
+{
+    if (!b || b->num_road_network_ids == 0) {
+        return 0;
+    }
+    for (int i = 0; i < b->num_road_network_ids; i++) {
+        if (road_network_id == b->road_network_ids[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void building_totals_add_corrupted_house(int unfixable)
 {
     extra.incorrect_houses++;

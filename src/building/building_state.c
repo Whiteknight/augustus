@@ -164,7 +164,7 @@ void building_state_save_to_buffer(buffer *buf, const building *b)
     buffer_write_i16(buf, b->grid_offset);
     buffer_write_i16(buf, b->type);
     buffer_write_i16(buf, b->subtype.house_level); // which union field we use does not matter
-    buffer_write_u8(buf, b->road_network_id);
+    buffer_write_u8(buf, b->num_road_network_ids ? b->road_network_ids[0] : 0);
     buffer_write_u8(buf, b->monthly_levy);
     buffer_write_u16(buf, b->created_sequence);
     buffer_write_i16(buf, b->houses_covered);
@@ -371,7 +371,11 @@ void building_state_load_from_buffer(buffer *buf, building *b, int building_buf_
     b->grid_offset = buffer_read_i16(buf);
     b->type = buffer_read_i16(buf);
     b->subtype.house_level = buffer_read_i16(buf); // which union field we use does not matter
-    b->road_network_id = buffer_read_u8(buf);
+
+    // TODO: Would like to serialize all of them, so we don't wait until the next call to 
+    // building_maintenance_check_rome_access() to update the list correctly.
+    b->road_network_ids[0] = buffer_read_u8(buf);
+    b->num_road_network_ids = b->road_network_ids[0] ? 1 : 0; 
     b->monthly_levy = buffer_read_u8(buf);
     b->created_sequence = buffer_read_u16(buf);
     b->houses_covered = buffer_read_i16(buf);

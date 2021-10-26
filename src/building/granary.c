@@ -347,7 +347,7 @@ int building_granary_for_storing(int x, int y, int resource, int road_network_id
     int min_dist = INFINITE;
     int min_building_id = 0;
     for (building *b = building_first_of_type(BUILDING_GRANARY); b; b = b->next_of_type) {
-        if (b->road_network_id != road_network_id ||
+        if (building_has_road_network_id(b, road_network_id) ||
             !building_granary_accepts_storage(b, resource, understaffed)) {
             continue;
         }
@@ -381,7 +381,7 @@ int building_getting_granary_for_storing(int x, int y, int resource, int road_ne
         if (b->state != BUILDING_STATE_IN_USE) {
             continue;
         }
-        if (!b->has_road_access || b->distance_from_entry <= 0 || b->road_network_id != road_network_id) {
+        if (!b->has_road_access || b->distance_from_entry <= 0 || building_has_road_network_id(b, road_network_id)) {
             continue;
         }
         int pct_workers = calc_percentage(b->num_workers, model_get_building(b->type)->laborers);
@@ -448,7 +448,8 @@ int building_granary_for_getting(building *src, map_point *dst, int min_amount)
     for (int i = 0; i < non_getting_granaries.num_items; i++) {
         building *b = building_get(non_getting_granaries.building_ids[i]);
         if (!config_get(CONFIG_GP_CH_GETTING_GRANARIES_GO_OFFROAD)) {
-            if (b->road_network_id != src->road_network_id) {
+            // WK TODO: src may have multiple road network ids
+            if (building_has_road_network_id(b, src->road_network_ids[0])) {
                 continue;
             }
         }

@@ -50,7 +50,7 @@ static int determine_tourist_destination(int x, int y)
             }
         }
         if (b->is_tourism_venue && !b->tourism_disabled && b->distance_from_entry
-            && b->road_network_id == road_network) {
+            && building_has_road_network_id(b, road_network)) {
             if (b->type == BUILDING_HIPPODROME && b->prev_part_building_id) {
                 continue;
             }
@@ -129,7 +129,7 @@ static building *determine_destination(figure *f)
             if ((type == BUILDING_HIPPODROME || type == BUILDING_COLOSSEUM) && b->data.monument.phase != -1) {
                 continue;
             }
-            if (b->distance_from_entry && b->road_network_id == road_network) {
+            if (b->distance_from_entry && building_has_road_network_id(b, road_network)) {
                 if (type == BUILDING_HIPPODROME && b->prev_part_building_id) {
                     continue;
                 }
