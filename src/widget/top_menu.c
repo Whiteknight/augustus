@@ -269,7 +269,10 @@ void widget_top_menu_draw(int force)
         data.offset_date = 852;
 
         int width = lang_text_draw_colored(6, 0, 495, 5, FONT_NORMAL_PLAIN, treasure_color);
-        text_draw_number(treasury, '@', " ", 501 + width, 5, FONT_NORMAL_PLAIN, treasure_color);
+        if (treasury >= 1000000)
+            text_draw_number(treasury, 0, " ", 495 + width, 5, FONT_NORMAL_PLAIN, treasure_color);
+        else
+            text_draw_number(treasury, '@', " ", 501 + width, 5, FONT_NORMAL_PLAIN, treasure_color);
 
         width = lang_text_draw_colored(6, 1, 645, 5, FONT_NORMAL_PLAIN, COLOR_WHITE);
         text_draw_number(city_population(), '@', " ", 651 + width, 5, FONT_NORMAL_PLAIN, COLOR_WHITE);
