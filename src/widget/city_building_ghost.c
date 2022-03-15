@@ -18,7 +18,9 @@
 #include "core/config.h"
 #include "core/config.h"
 #include "core/log.h"
+#include "figure/figure.h"
 #include "figure/formation.h"
+#include "figuretype/animal.h"
 #include "graphics/image.h"
 #include "input/scroll.h"
 #include "map/bridge.h"
@@ -455,8 +457,12 @@ static void draw_default(const map_tile *tile, int x_view, int y_view, building_
                 forbidden_terrain &= ~TERRAIN_WALL;
             }
         }
-        if (fully_blocked || forbidden_terrain || (map_has_figure_at(tile_offset) && type != BUILDING_PLAZA)) {
+
+        if (fully_blocked || forbidden_terrain) {
             blocked_tiles[i] = 1;
+        } else if (map_has_figure_at(tile_offset) && type != BUILDING_PLAZA) {
+            blocked_tiles[i] = 1;
+            figure_animal_try_nudge_at(tile, tile_offset, building_size);
         } else {
             blocked_tiles[i] = 0;
         }

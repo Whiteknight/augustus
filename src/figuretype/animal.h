@@ -2,6 +2,7 @@
 #define FIGURETYPE_ANIMAL_H
 
 #include "figure/figure.h"
+#include "map/point.h"
 
 void figure_create_fishing_points(void);
 
@@ -18,5 +19,7 @@ void figure_zebra_action(figure *f);
 void figure_hippodrome_horse_action(figure *f);
 
 void figure_hippodrome_horse_reroute(void);
+
+void figure_animal_try_nudge_at(const map_tile *building_center_tile, int animal_tile_offset, int building_size);
 
 #endif // FIGURETYPE_ANIMAL_H
