@@ -374,19 +374,19 @@ static void draw_cartpusher(building_info_context *c, figure *f)
 
 static int is_depot_cartpusher_recalled(figure *f)
 {
-    return f->action_state == FIGURE_ACTION_236_DEPOT_CART_PUSHER_RETURNING ||
-        f->action_state == FIGURE_ACTION_237_DEPOT_CART_PUSHER_CANCEL_ORDER;
+    return f->action_state == FIGURE_ACTION_243_DEPOT_CART_PUSHER_RETURNING ||
+        f->action_state == FIGURE_ACTION_244_DEPOT_CART_PUSHER_CANCEL_ORDER;
 }
 
 static void draw_depot_cartpusher(building_info_context* c, figure* f)
 {
-    image_draw(big_people_image(f->type), c->x_offset + 28, c->y_offset + 112);
+    image_draw(big_people_image(f->type), c->x_offset + 28, c->y_offset + 112, COLOR_MASK_NONE, SCALE_NONE);
     lang_text_draw(65, f->name, c->x_offset + 90, c->y_offset + 108, FONT_LARGE_BROWN);
     if (f->loads_sold_or_carrying > 0 && f->resource_id != RESOURCE_NONE) {
         image_draw(image_group(GROUP_RESOURCE_ICONS) +
             f->resource_id + resource_image_offset(f->resource_id, RESOURCE_IMAGE_ICON),
-            c->x_offset + 92, c->y_offset + 135);
-        text_draw_number(f->loads_sold_or_carrying, 'x', "", c->x_offset + 118, c->y_offset + 139, FONT_NORMAL_BROWN);
+            c->x_offset + 92, c->y_offset + 135, COLOR_MASK_NONE, SCALE_NONE);
+        text_draw_number(f->loads_sold_or_carrying, 'x', "", c->x_offset + 118, c->y_offset + 139, FONT_NORMAL_BROWN, COLOR_BLACK);
     }
 
     int resource_type = f->current_order.resource_type;
@@ -404,7 +404,7 @@ static void draw_depot_cartpusher(building_info_context* c, figure* f)
         FONT_NORMAL_BROWN, 0);
     image_draw(image_group(GROUP_RESOURCE_ICONS) +
         resource_type + resource_image_offset(resource_type, RESOURCE_IMAGE_ICON),
-        c->x_offset + 40 + width, c->y_offset + 210);
+        c->x_offset + 40 + width, c->y_offset + 210, COLOR_MASK_NONE, SCALE_NONE);
     width += text_draw_label_and_number(translation_for(building_translation_key(src)),
         f->current_order.src_storage_id, " -----) ",
         c->x_offset + 66 + width, c->y_offset + 216, FONT_NORMAL_BROWN, 0);
