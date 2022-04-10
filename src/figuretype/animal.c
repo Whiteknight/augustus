@@ -262,7 +262,7 @@ static int terrain_blocked_for_animals(int grid_offset)
         TERRAIN_BUILDING | TERRAIN_SHRUB );
 }
 
-void figure_animal_try_nudge_at(const map_tile *building_center_tile, int animal_tile_offset, int building_size)
+void figure_animal_try_nudge_at(int building_center_tile_grid_offset, int animal_tile_offset, int building_size)
 {
     int figure_id = map_figure_at(animal_tile_offset);
     figure *f = figure_get(figure_id);
@@ -273,7 +273,7 @@ void figure_animal_try_nudge_at(const map_tile *building_center_tile, int animal
         const int random_value = map_random_get(animal_tile_offset);
         for (int i = 0; i < num_tiles; i++) {
             int current_tile_delta = tile_deltas[(random_value + i) % num_tiles];
-            int target_grid_offset = building_center_tile->grid_offset + current_tile_delta;
+            int target_grid_offset = building_center_tile_grid_offset + current_tile_delta;
             if (terrain_blocked_for_animals(target_grid_offset)) {
                 continue;
             }
