@@ -2,7 +2,6 @@
 #define FIGURETYPE_ANIMAL_H
 
 #include "figure/figure.h"
-#include "map/point.h"
 
 void figure_create_fishing_points(void);
 
