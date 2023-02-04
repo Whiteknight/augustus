@@ -94,7 +94,6 @@ typedef enum {
     WIN_CRITERIA_TIME_LIMIT,
 
     // TODO: Try to implement these
-    WIN_CRITERIA_BUILD_MONUMENT,    // Build a specific monument
     WIN_CRITERIA_BUILD_X_BUILDINGS, // Build at least a quantity of a specific building type
     WIN_CRITERIA_EVOLVE_X_HOUSES,   // Build at least X houses of the given level or higher
     WIN_CRITERIA_EARN_X_DENARII,    // Have at least X denarii in city coffers

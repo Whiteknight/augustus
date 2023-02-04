@@ -1,6 +1,9 @@
 #include "criteria.h"
 
 #include "scenario/data.h"
+#include "building/count.h"
+#include "core/log.h"
+#include "city/finance.h"
 #include "city/population.h"
 #include "city/ratings.h"
 #include "game/time.h"
@@ -179,9 +182,17 @@ static win_criteria_satisfy_state test_criteria(win_criteria_type type, int goal
             if (game_time_year() <= scenario.start_year + goal)
                 return WIN_CRITERIA_STATE_OK;
             return WIN_CRITERIA_STATE_FAIL;
+        case WIN_CRITERIA_EVOLVE_X_HOUSES:
+            return building_count_active(BUILDING_HOUSE_SMALL_TENT + data) >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
+        case WIN_CRITERIA_BUILD_X_BUILDINGS:
+            return building_count_active(data) >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
+        case WIN_CRITERIA_EARN_X_DENARII:
+            return city_finance_treasury() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
     }
 
-    return 1;
+    // The criteria type is unsupported, so just return failure. 
+    log_error("Unknown win criteria type tested", 0, type);
+    return WIN_CRITERIA_STATE_FAIL;
 }
 
 win_criteria_satisfy_state scenario_criteria_test_all()
