@@ -91,7 +91,18 @@ typedef enum {
     WIN_CRITERIA_PEACE,
     WIN_CRITERIA_FAVOR,
     WIN_CRITERIA_SURVIVAL_YEARS,
-    WIN_CRITERIA_TIME_LIMIT
+    WIN_CRITERIA_TIME_LIMIT,
+
+    // TODO: Try to implement these
+    WIN_CRITERIA_BUILD_MONUMENT,    // Build a specific monument
+    WIN_CRITERIA_BUILD_X_BUILDINGS, // Build at least a quantity of a specific building type
+    WIN_CRITERIA_EVOLVE_X_HOUSES,   // Build at least X houses of the given level or higher
+    WIN_CRITERIA_EARN_X_DENARII,    // Have at least X denarii in city coffers
+    WIN_CRITERIA_SELL_X_GOODS,      // Sell at least X of the specific trade good to any trade partner
+    WIN_CRITERIA_HOLD_ROMAN_GAMES,  // Hold roman games at coluseum at least once (requested by Fairbuy)
+    WIN_CRITERIA_GIFT_X_DENARII,    // Spend at least X denarii on gifts to caesar
+
+    WIN_CRITERIA_END
 } win_criteria_type;
 
 typedef struct {
