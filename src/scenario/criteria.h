@@ -2,6 +2,28 @@
 #define SCENARIO_CRITERIA_H
 
 #include "core/buffer.h"
+#include "scenario/data.h"
+
+typedef enum {
+    // There are no criteria. Free play.
+    WIN_CRITERIA_STATE_NONE,
+
+    // All criteria are satisfied. Map is won.
+    WIN_CRITERIA_STATE_OK,
+
+    // At least one criteria is not satisfied. Play continues.
+    WIN_CRITERIA_STATE_FAIL,
+
+    // A condition has been failed irrepairably. The game is lost.
+    WIN_CRITERIA_STATE_LOSE
+} win_criteria_satisfy_state;
+
+void scenario_criteria_clear();
+int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int data);
+int scenario_criteria_toggle(win_criteria_type type, int goal, int data);
+int scenario_criteria_disable(win_criteria_type type);
+
+win_criteria_satisfy_state scenario_criteria_test_all();
 
 int scenario_criteria_population_enabled(void);
 int scenario_criteria_population(void);

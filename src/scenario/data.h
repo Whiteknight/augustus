@@ -81,10 +81,25 @@ enum {
     ALLOWED_BUILDING_MONUMENTS = 48,
 };
 
-struct win_criteria_t {
+#define MAX_WIN_CRITERIA 10
+
+typedef enum {
+    WIN_CRITERIA_NONE,
+    WIN_CRITERIA_POPULATION_MINIMUM,
+    WIN_CRITERIA_CULTURE,
+    WIN_CRITERIA_PROSPERITY,
+    WIN_CRITERIA_PEACE,
+    WIN_CRITERIA_FAVOR,
+    WIN_CRITERIA_SURVIVAL_YEARS,
+    WIN_CRITERIA_TIME_LIMIT
+} win_criteria_type;
+
+typedef struct {
     int enabled;
+    win_criteria_type type;
     int goal;
-};
+    int data;
+} win_criteria_t;
 
 typedef struct {
     int year;
@@ -128,19 +143,7 @@ typedef struct {
 #define DEMAND_CHANGE_LEGACY_IS_FALL -9999
 
 typedef struct {
-    struct win_criteria_t population;
-    struct win_criteria_t culture;
-    struct win_criteria_t prosperity;
-    struct win_criteria_t peace;
-    struct win_criteria_t favor;
-    struct {
-        int enabled;
-        int years;
-    } time_limit;
-    struct {
-        int enabled;
-        int years;
-    } survival_time;
+    win_criteria_t goals[MAX_WIN_CRITERIA];
     int milestone25_year;
     int milestone50_year;
     int milestone75_year;

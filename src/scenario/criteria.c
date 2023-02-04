@@ -1,77 +1,245 @@
 #include "criteria.h"
 
 #include "scenario/data.h"
+#include "city/ratings.h"
+#include "game/time.h"
 
 static int max_game_year;
 
+static int has_criteria_enabled(win_criteria_type type)
+{
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (scenario.win_criteria.goals[i].type == type) {
+            return scenario.win_criteria.goals[i].enabled;
+        }
+    }
+    return 0;
+}
+
+static int get_win_criteria_value(win_criteria_type type)
+{
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (scenario.win_criteria.goals[i].type == type && scenario.win_criteria.goals[i].enabled) {
+            return scenario.win_criteria.goals[i].goal;
+        }
+    }
+    return 0;
+}
+
+void scenario_criteria_clear()
+{
+    // Clear the criteria data
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        scenario.win_criteria.goals[i].type = WIN_CRITERIA_NONE;
+        scenario.win_criteria.goals[i].enabled = 0;
+        scenario.win_criteria.goals[i].goal = 0;
+        scenario.win_criteria.goals[i].data = 0;
+    }
+
+    // allocate a few slots to common types, just so when we try_add later we can find them quick
+    scenario.win_criteria.goals[0].type = WIN_CRITERIA_CULTURE;
+    scenario.win_criteria.goals[1].type = WIN_CRITERIA_PROSPERITY;
+    scenario.win_criteria.goals[2].type = WIN_CRITERIA_PEACE;
+    scenario.win_criteria.goals[3].type = WIN_CRITERIA_FAVOR;
+    scenario.win_criteria.goals[4].type = WIN_CRITERIA_POPULATION_MINIMUM;
+    scenario.win_criteria.goals[5].type = WIN_CRITERIA_TIME_LIMIT;
+    scenario.win_criteria.goals[6].type = WIN_CRITERIA_SURVIVAL_YEARS;
+}
+
+// Enable the given criteria type or, if it's already enabled, update the values
+int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int data)
+{
+    // Try to find an existing entry with that type. If found, update in-place
+    int first_empty_index = -1;
+    int last_disabled_index = -1;
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (!scenario.win_criteria.goals[i].enabled) {
+            last_disabled_index = i;
+        }
+        if (scenario.win_criteria.goals[i].type == WIN_CRITERIA_NONE && first_empty_index == -1)
+        {
+            first_empty_index = i;
+        }
+
+        if (scenario.win_criteria.goals[i].type == type)
+        {
+            scenario.win_criteria.goals[i].enabled = 1;
+            scenario.win_criteria.goals[i].goal = goal;
+            scenario.win_criteria.goals[i].data = data;
+            return 1;
+        }
+    }
+
+    // if we couldn't find an existing entry fill the first empty slot, if we have one.
+    if (first_empty_index >= 0)
+    {
+        scenario.win_criteria.goals[first_empty_index].enabled = 1;
+        scenario.win_criteria.goals[first_empty_index].type = type;
+        scenario.win_criteria.goals[first_empty_index].goal = goal;
+        scenario.win_criteria.goals[first_empty_index].data = data;
+        return 1;
+    }
+
+    // otherwise we're overwriting a disabled slot. Overwrite the last disabled slot, so we can try not 
+    // to overwrite the first couple common ones (culture, prosperity, peace, favor, etc)
+    if (last_disabled_index >= 0)
+    {
+        scenario.win_criteria.goals[last_disabled_index].enabled = 1;
+        scenario.win_criteria.goals[last_disabled_index].type = type;
+        scenario.win_criteria.goals[last_disabled_index].goal = goal;
+        scenario.win_criteria.goals[last_disabled_index].data = data;
+        return 1;
+    }
+
+    return 0;
+}
+
+// Try to toggle an existing slot, with existing data.
+// If the slot does not exist, create one with default values
+// returns the current enabled state of the criteria
+int scenario_criteria_toggle(win_criteria_type type, int defaultGoal, int defaultData)
+{
+    // If we have an existing slot just toggle the enable flag and leave.
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (scenario.win_criteria.goals[i].type == type) {
+            scenario.win_criteria.goals[i].enabled = !scenario.win_criteria.goals[i].enabled;
+            return scenario.win_criteria.goals[i].enabled;
+        }
+    }
+
+    // Otherwise it doesn't exist (disabled) so we add it.
+    return scenario_criteria_try_add_or_update(type, defaultGoal, defaultData);
+}
+
+int scenario_criteria_disable(win_criteria_type type)
+{
+    // Don't bail out early just in case we somehow get a duplicate entry
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (scenario.win_criteria.goals[i].type == type) {
+            scenario.win_criteria.goals[i].enabled = 0;
+        }
+    }
+}
+
+static win_criteria_satisfy_state test_criteria(win_criteria_type type, int goal, int data)
+{
+    switch (type) {
+        case WIN_CRITERIA_POPULATION_MINIMUM:
+        case WIN_CRITERIA_CULTURE:
+            return city_rating_culture() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+        case WIN_CRITERIA_PROSPERITY:
+            return city_rating_prosperity() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+        case WIN_CRITERIA_PEACE:
+            return city_rating_peace() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+        case WIN_CRITERIA_FAVOR:
+            return city_rating_favor() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+        case WIN_CRITERIA_SURVIVAL_YEARS:
+            if (game_time_year() > scenario.start_year + goal)
+                return WIN_CRITERIA_STATE_OK;
+            return WIN_CRITERIA_STATE_NONE;
+        case WIN_CRITERIA_TIME_LIMIT:
+            if (game_time_year() <= scenario.start_year + goal)
+                return WIN_CRITERIA_STATE_OK;
+            return WIN_CRITERIA_STATE_FAIL;
+    }
+
+    return 1;
+}
+
+win_criteria_satisfy_state scenario_criteria_test_all()
+{
+    // Check all criteria for victory. 
+    // If there are no criteria, return NONE (free play)
+    // If any criteria LOSE, return LOSE (game over)
+    // if any criteria FAIL, return FAIL (keep playing)
+    // if all criteria WIN, return WIN (accept promotion)
+    int num_criteria = 0;
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (!scenario.win_criteria.goals[i].enabled) {
+            continue;
+        }
+
+        num_criteria++;
+        win_criteria_type type = scenario.win_criteria.goals[i].type;
+        int goal = scenario.win_criteria.goals[i].goal;
+        int data = scenario.win_criteria.goals[i].data;
+        win_criteria_satisfy_state state = test_criteria(type, goal, data);
+        if (state == WIN_CRITERIA_STATE_LOSE || state == WIN_CRITERIA_STATE_FAIL) {
+            return state;
+        }
+    }
+
+    return num_criteria > 0 ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+}
+
 int scenario_criteria_population_enabled(void)
 {
-    return scenario.win_criteria.population.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_POPULATION_MINIMUM);
 }
 
 int scenario_criteria_population(void)
 {
-    return scenario.win_criteria.population.goal;
+    return get_win_criteria_value(WIN_CRITERIA_POPULATION_MINIMUM);
 }
 
 int scenario_criteria_culture_enabled(void)
 {
-    return scenario.win_criteria.culture.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_CULTURE);
 }
 
 int scenario_criteria_culture(void)
 {
-    return scenario.win_criteria.culture.goal;
+    return get_win_criteria_value(WIN_CRITERIA_CULTURE);
 }
 
 int scenario_criteria_prosperity_enabled(void)
 {
-    return scenario.win_criteria.prosperity.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_PROSPERITY);
 }
 
 int scenario_criteria_prosperity(void)
 {
-    return scenario.win_criteria.prosperity.goal;
+    return get_win_criteria_value(WIN_CRITERIA_PROSPERITY);
 }
 
 int scenario_criteria_peace_enabled(void)
 {
-    return scenario.win_criteria.peace.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_PEACE);
 }
 
 int scenario_criteria_peace(void)
 {
-    return scenario.win_criteria.peace.goal;
+    return get_win_criteria_value(WIN_CRITERIA_PEACE);
 }
 
 int scenario_criteria_favor_enabled(void)
 {
-    return scenario.win_criteria.favor.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_FAVOR);
 }
 
 int scenario_criteria_favor(void)
 {
-    return scenario.win_criteria.favor.goal;
+    return has_criteria_enabled(WIN_CRITERIA_FAVOR);
 }
 
 int scenario_criteria_time_limit_enabled(void)
 {
-    return scenario.win_criteria.time_limit.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_TIME_LIMIT);
 }
 
 int scenario_criteria_time_limit_years(void)
 {
-    return scenario.win_criteria.time_limit.years;
+    return get_win_criteria_value(WIN_CRITERIA_TIME_LIMIT);
 }
 
 int scenario_criteria_survival_enabled(void)
 {
-    return scenario.win_criteria.survival_time.enabled;
+    return has_criteria_enabled(WIN_CRITERIA_SURVIVAL_YEARS);
 }
 
 int scenario_criteria_survival_years(void)
 {
-    return scenario.win_criteria.survival_time.years;
+    return has_criteria_enabled(WIN_CRITERIA_SURVIVAL_YEARS);
 }
 
 int scenario_criteria_milestone_year(int percentage)
@@ -90,10 +258,10 @@ int scenario_criteria_milestone_year(int percentage)
 
 void scenario_criteria_init_max_year(void)
 {
-    if (scenario.win_criteria.time_limit.enabled) {
-        max_game_year = scenario.start_year + scenario.win_criteria.time_limit.years;
-    } else if (scenario.win_criteria.survival_time.enabled) {
-        max_game_year = scenario.start_year + scenario.win_criteria.survival_time.years;
+    if (scenario_criteria_time_limit_enabled()) {
+        max_game_year = scenario.start_year + scenario_criteria_time_limit_years();
+    } else if (scenario_criteria_survival_enabled()) {
+        max_game_year = scenario.start_year + scenario_criteria_survival_years();
     } else {
         max_game_year = 1000000 + scenario.start_year;
     }
