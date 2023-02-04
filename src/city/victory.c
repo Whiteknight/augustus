@@ -43,17 +43,21 @@ static int determine_victory_state(void)
     win_criteria_satisfy_state criteria_state = scenario_criteria_test_all();
     switch (criteria_state) {
         case WIN_CRITERIA_STATE_NONE:
+            // There are no criteria set
             state = VICTORY_STATE_NONE;
             has_criteria = 0;
             break;
         case WIN_CRITERIA_STATE_OK:
+            // All criteria satisfied
             has_criteria = 1;
             break;
         case WIN_CRITERIA_STATE_FAIL:
+            // At least one criteria not satisfied
             has_criteria = 1;
             state = VICTORY_STATE_NONE;
             break;
         case WIN_CRITERIA_STATE_LOSE:
+            // At least one instant-loss criteria failed.
             return VICTORY_STATE_LOST;
             has_criteria = 1;
             break;

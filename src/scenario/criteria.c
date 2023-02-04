@@ -1,6 +1,7 @@
 #include "criteria.h"
 
 #include "scenario/data.h"
+#include "city/population.h"
 #include "city/ratings.h"
 #include "game/time.h"
 
@@ -161,18 +162,19 @@ static win_criteria_satisfy_state test_criteria(win_criteria_type type, int goal
 {
     switch (type) {
         case WIN_CRITERIA_POPULATION_MINIMUM:
+            return city_population() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
         case WIN_CRITERIA_CULTURE:
-            return city_rating_culture() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+            return city_rating_culture() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
         case WIN_CRITERIA_PROSPERITY:
-            return city_rating_prosperity() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+            return city_rating_prosperity() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
         case WIN_CRITERIA_PEACE:
-            return city_rating_peace() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+            return city_rating_peace() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
         case WIN_CRITERIA_FAVOR:
-            return city_rating_favor() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_NONE;
+            return city_rating_favor() >= goal ? WIN_CRITERIA_STATE_OK : WIN_CRITERIA_STATE_FAIL;
         case WIN_CRITERIA_SURVIVAL_YEARS:
             if (game_time_year() > scenario.start_year + goal)
                 return WIN_CRITERIA_STATE_OK;
-            return WIN_CRITERIA_STATE_NONE;
+            return WIN_CRITERIA_STATE_LOSE;
         case WIN_CRITERIA_TIME_LIMIT:
             if (game_time_year() <= scenario.start_year + goal)
                 return WIN_CRITERIA_STATE_OK;
