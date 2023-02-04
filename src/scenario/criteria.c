@@ -6,6 +6,32 @@
 
 static int max_game_year;
 
+win_criteria_t *scenario_criteria_get_ptr(scenario_win_criteria* scenario_ptr, win_criteria_type type)
+{
+    int first_empty_index = -1;
+    int last_disabled_index = -1;
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        if (scenario_ptr->goals[i].type == type) {
+            return &scenario_ptr->goals[i];
+        }
+        if (!scenario_ptr->goals[i].enabled) {
+            last_disabled_index = i;
+        }
+        if (scenario_ptr->goals[i].type == WIN_CRITERIA_NONE && first_empty_index == -1) {
+            first_empty_index = i;
+        }
+    }
+    if (first_empty_index >= 0) {
+        scenario_ptr->goals[first_empty_index].type = type;
+        return &scenario_ptr->goals[first_empty_index];
+    }
+    if (last_disabled_index >= 0) {
+        scenario_ptr->goals[last_disabled_index].type = type;
+        return &scenario_ptr->goals[last_disabled_index];
+    }
+    return NULL;
+}
+
 static int has_criteria_enabled(win_criteria_type type)
 {
     for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
@@ -26,46 +52,50 @@ static int get_win_criteria_value(win_criteria_type type)
     return 0;
 }
 
-void scenario_criteria_clear()
+void scenario_criteria_clear_ptr(scenario_win_criteria *ptr)
 {
     // Clear the criteria data
     for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
-        scenario.win_criteria.goals[i].type = WIN_CRITERIA_NONE;
-        scenario.win_criteria.goals[i].enabled = 0;
-        scenario.win_criteria.goals[i].goal = 0;
-        scenario.win_criteria.goals[i].data = 0;
+        ptr->goals[i].type = WIN_CRITERIA_NONE;
+        ptr->goals[i].enabled = 0;
+        ptr->goals[i].goal = 0;
+        ptr->goals[i].data = 0;
     }
 
     // allocate a few slots to common types, just so when we try_add later we can find them quick
-    scenario.win_criteria.goals[0].type = WIN_CRITERIA_CULTURE;
-    scenario.win_criteria.goals[1].type = WIN_CRITERIA_PROSPERITY;
-    scenario.win_criteria.goals[2].type = WIN_CRITERIA_PEACE;
-    scenario.win_criteria.goals[3].type = WIN_CRITERIA_FAVOR;
-    scenario.win_criteria.goals[4].type = WIN_CRITERIA_POPULATION_MINIMUM;
-    scenario.win_criteria.goals[5].type = WIN_CRITERIA_TIME_LIMIT;
-    scenario.win_criteria.goals[6].type = WIN_CRITERIA_SURVIVAL_YEARS;
+    ptr->goals[0].type = WIN_CRITERIA_CULTURE;
+    ptr->goals[1].type = WIN_CRITERIA_PROSPERITY;
+    ptr->goals[2].type = WIN_CRITERIA_PEACE;
+    ptr->goals[3].type = WIN_CRITERIA_FAVOR;
+    ptr->goals[4].type = WIN_CRITERIA_POPULATION_MINIMUM;
+    ptr->goals[5].type = WIN_CRITERIA_TIME_LIMIT;
+    ptr->goals[6].type = WIN_CRITERIA_SURVIVAL_YEARS;
 }
 
-// Enable the given criteria type or, if it's already enabled, update the values
-int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int data)
+void scenario_criteria_clear()
 {
-    // Try to find an existing entry with that type. If found, update in-place
+    scenario_criteria_clear_ptr(&scenario.win_criteria);
+}
+
+int scenario_criteria_try_add_or_update_ptr(scenario_win_criteria *ptr, win_criteria_type type, int goal, int data)
+{
+// Try to find an existing entry with that type. If found, update in-place
     int first_empty_index = -1;
     int last_disabled_index = -1;
     for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
-        if (!scenario.win_criteria.goals[i].enabled) {
+        if (!ptr->goals[i].enabled) {
             last_disabled_index = i;
         }
-        if (scenario.win_criteria.goals[i].type == WIN_CRITERIA_NONE && first_empty_index == -1)
+        if (ptr->goals[i].type == WIN_CRITERIA_NONE && first_empty_index == -1)
         {
             first_empty_index = i;
         }
 
-        if (scenario.win_criteria.goals[i].type == type)
+        if (ptr->goals[i].type == type)
         {
-            scenario.win_criteria.goals[i].enabled = 1;
-            scenario.win_criteria.goals[i].goal = goal;
-            scenario.win_criteria.goals[i].data = data;
+            ptr->goals[i].enabled = 1;
+            ptr->goals[i].goal = goal;
+            ptr->goals[i].data = data;
             return 1;
         }
     }
@@ -73,10 +103,10 @@ int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int da
     // if we couldn't find an existing entry fill the first empty slot, if we have one.
     if (first_empty_index >= 0)
     {
-        scenario.win_criteria.goals[first_empty_index].enabled = 1;
-        scenario.win_criteria.goals[first_empty_index].type = type;
-        scenario.win_criteria.goals[first_empty_index].goal = goal;
-        scenario.win_criteria.goals[first_empty_index].data = data;
+        ptr->goals[first_empty_index].enabled = 1;
+        ptr->goals[first_empty_index].type = type;
+        ptr->goals[first_empty_index].goal = goal;
+        ptr->goals[first_empty_index].data = data;
         return 1;
     }
 
@@ -84,14 +114,20 @@ int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int da
     // to overwrite the first couple common ones (culture, prosperity, peace, favor, etc)
     if (last_disabled_index >= 0)
     {
-        scenario.win_criteria.goals[last_disabled_index].enabled = 1;
-        scenario.win_criteria.goals[last_disabled_index].type = type;
-        scenario.win_criteria.goals[last_disabled_index].goal = goal;
-        scenario.win_criteria.goals[last_disabled_index].data = data;
+        ptr->goals[last_disabled_index].enabled = 1;
+        ptr->goals[last_disabled_index].type = type;
+        ptr->goals[last_disabled_index].goal = goal;
+        ptr->goals[last_disabled_index].data = data;
         return 1;
     }
 
     return 0;
+}
+
+// Enable the given criteria type or, if it's already enabled, update the values
+int scenario_criteria_try_add_or_update(win_criteria_type type, int goal, int data)
+{
+    scenario_criteria_try_add_or_update_ptr(&scenario.win_criteria, type, goal, data);
 }
 
 // Try to toggle an existing slot, with existing data.

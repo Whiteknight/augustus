@@ -576,28 +576,28 @@ void scenario_objectives_from_buffer(buffer *buf, int version, scenario_win_crit
     int survival_time_enabled = buffer_read_i32(buf);
     int survival_time_years = buffer_read_i32(buf);
     if (culture_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_CULTURE, culture_goal, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_CULTURE, culture_goal, 0);
     }
     if (prosperity_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_PROSPERITY, prosperity_goal, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_PROSPERITY, prosperity_goal, 0);
     }
     if (peace_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_PEACE, peace_goal, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_PEACE, peace_goal, 0);
     }
     if (favor_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_FAVOR, favor_goal, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_FAVOR, favor_goal, 0);
     }
     if (time_limit_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_TIME_LIMIT, time_limit, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_TIME_LIMIT, time_limit, 0);
     }
     if (survival_time_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_SURVIVAL_YEARS, survival_time_years, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_SURVIVAL_YEARS, survival_time_years, 0);
     }
     buffer_skip(buf, 8);
     int population_enabled = buffer_read_i32(buf);
     int population_minimum = buffer_read_i32(buf);
     if (population_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_POPULATION_MINIMUM, population_minimum, 0);
+        scenario_criteria_try_add_or_update_ptr(win_criteria, WIN_CRITERIA_POPULATION_MINIMUM, population_minimum, 0);
     }
 }
 
