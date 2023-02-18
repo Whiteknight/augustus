@@ -1,5 +1,7 @@
 #include "criteria.h"
 
+#include <stddef.h>
+
 #include "scenario/data.h"
 #include "building/count.h"
 #include "core/log.h"
