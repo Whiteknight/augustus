@@ -271,7 +271,7 @@ int scenario_criteria_favor_enabled(void)
 
 int scenario_criteria_favor(void)
 {
-    return has_criteria_enabled(WIN_CRITERIA_FAVOR);
+    return get_win_criteria_value(WIN_CRITERIA_FAVOR);
 }
 
 int scenario_criteria_time_limit_enabled(void)
