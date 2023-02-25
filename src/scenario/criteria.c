@@ -341,7 +341,7 @@ void scenario_criteria_load_data(buffer *data, int version, int step)
     // In old save files, earthquake data was stored between several win criteria conditions.
     // So the loader calls this function multiple times to load old files
     // New files we load everything in the first shot and ignore subsequent calls
-    if (version <= SAVE_GAME_LAST_STATIC_WIN_CRITERIA) {
+    if (version <= SCENARIO_LAST_STATIC_WIN_CRITERIA) {
         load_static_data(data, version, step);
         return;
     }
