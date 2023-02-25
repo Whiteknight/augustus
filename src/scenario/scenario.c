@@ -168,24 +168,10 @@ void scenario_save_state(buffer *buf)
     }
 
     // win criteria
-    buffer_write_i32(buf, scenario_criteria_culture());
-    buffer_write_i32(buf, scenario_criteria_prosperity());
-    buffer_write_i32(buf, scenario_criteria_peace());
-    buffer_write_i32(buf, scenario_criteria_favor());
-    buffer_write_u8(buf, scenario_criteria_culture_enabled());
-    buffer_write_u8(buf, scenario_criteria_prosperity_enabled());
-    buffer_write_u8(buf, scenario_criteria_peace_enabled());
-    buffer_write_u8(buf, scenario_criteria_favor_enabled());
-    buffer_write_i32(buf, scenario_criteria_time_limit_enabled());
-    buffer_write_i32(buf, scenario_criteria_time_limit_years());
-    buffer_write_i32(buf, scenario_criteria_survival_enabled());
-    buffer_write_i32(buf, scenario_criteria_survival_years());
+    scenario_criteria_save_data(buf);
 
     buffer_write_i32(buf, scenario.earthquake.severity);
     buffer_write_i32(buf, scenario.earthquake.year);
-
-    buffer_write_i32(buf, scenario_criteria_population_enabled());
-    buffer_write_i32(buf, scenario_criteria_population());
 
     // map points
     buffer_write_i16(buf, scenario.earthquake_point.x);
@@ -401,46 +387,14 @@ void scenario_load_state(buffer *buf, int version)
     }
 
     // win criteria
-    scenario_criteria_clear();
-    int culture_goal = buffer_read_i32(buf);
-    int prosperity_goal = buffer_read_i32(buf);
-    int peace_goal = buffer_read_i32(buf);
-    int favor_goal = buffer_read_i32(buf);
-    int culture_enabled = buffer_read_u8(buf);
-    int prosperity_enabled = buffer_read_u8(buf);
-    int peace_enabled = buffer_read_u8(buf);
-    int favor_enabled = buffer_read_u8(buf);
-    int time_limit_enabled = buffer_read_i32(buf);
-    int time_limit = buffer_read_i32(buf);
-    int survival_time_enabled = buffer_read_i32(buf);
-    int survival_time_years = buffer_read_i32(buf);
-    if (culture_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_CULTURE, culture_goal, 0);
-    }
-    if (prosperity_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_PROSPERITY, prosperity_goal, 0);
-    }
-    if (peace_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_PEACE, peace_goal, 0);
-    }
-    if (favor_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_FAVOR, favor_goal, 0);
-    }
-    if (time_limit_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_TIME_LIMIT, time_limit, 0);
-    }
-    if (survival_time_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_SURVIVAL_YEARS, survival_time_years, 0);
-    }
+    // Have to split it up since for some reason the earthquake data was stored between
+    // a few different win criteria for older file formats
+    scenario_criteria_load_data(buf, version, 1);
 
     scenario.earthquake.severity = buffer_read_i32(buf);
     scenario.earthquake.year = buffer_read_i32(buf);
 
-    int population_enabled = buffer_read_i32(buf);
-    int population_minimum = buffer_read_i32(buf);
-    if (population_enabled) {
-        scenario_criteria_try_add_or_update(WIN_CRITERIA_POPULATION_MINIMUM, population_minimum, 0);
-    }
+    scenario_criteria_load_data(buf, version, 2);
 
     // map points
     scenario.earthquake_point.x = buffer_read_i16(buf);

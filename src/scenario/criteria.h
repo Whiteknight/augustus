@@ -61,4 +61,8 @@ void scenario_criteria_save_state(buffer *buf);
 
 void scenario_criteria_load_state(buffer *buf);
 
+void scenario_criteria_load_data(buffer *data, int version, int step);
+
+void scenario_criteria_save_data(buffer *data);
+
 #endif // SCENARIO_CRITERIA_H

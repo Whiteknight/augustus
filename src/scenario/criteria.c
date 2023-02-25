@@ -8,6 +8,7 @@
 #include "city/finance.h"
 #include "city/population.h"
 #include "city/ratings.h"
+#include "game/save_version.h"
 #include "game/time.h"
 
 static int max_game_year;
@@ -331,4 +332,87 @@ void scenario_criteria_save_state(buffer *buf)
 void scenario_criteria_load_state(buffer *buf)
 {
     max_game_year = buffer_read_i32(buf);
+}
+
+static void load_static_data(buffer *buf, int version, int step);
+
+void scenario_criteria_load_data(buffer *data, int version, int step)
+{
+    // In old save files, earthquake data was stored between several win criteria conditions.
+    // So the loader calls this function multiple times to load old files
+    // New files we load everything in the first shot and ignore subsequent calls
+    if (version <= SAVE_GAME_LAST_STATIC_WIN_CRITERIA) {
+        load_static_data(data, version, step);
+        return;
+    }
+    if (step != 1) {
+        return;
+    }
+
+    // From this point, we are loading new-style dynamic win criteria
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        int criteria_enabled = buffer_read_i32(data);
+        int criteria_type = buffer_read_i32(data);
+        int criteria_goal = buffer_read_i32(data);
+        int criteria_data = buffer_read_i32(data);
+        scenario.win_criteria.goals[i].enabled = criteria_enabled;
+        scenario.win_criteria.goals[i].type = criteria_type;
+        scenario.win_criteria.goals[i].goal = criteria_goal;
+        scenario.win_criteria.goals[i].data = criteria_data;
+    }
+}
+
+void scenario_criteria_save_data(buffer *buf)
+{
+    for (int i = 0; i < MAX_WIN_CRITERIA; i++) {
+        buffer_write_i32(buf, scenario.win_criteria.goals[i].enabled);
+        buffer_write_i32(buf, scenario.win_criteria.goals[i].type);
+        buffer_write_i32(buf, scenario.win_criteria.goals[i].goal);
+        buffer_write_i32(buf, scenario.win_criteria.goals[i].data);
+    }
+}
+
+// Loader for older-style file formats
+static void load_static_data(buffer *buf, int version, int step)
+{
+    if (step == 1) {
+        scenario_criteria_clear();
+        int culture_goal = buffer_read_i32(buf);
+        int prosperity_goal = buffer_read_i32(buf);
+        int peace_goal = buffer_read_i32(buf);
+        int favor_goal = buffer_read_i32(buf);
+        int culture_enabled = buffer_read_u8(buf);
+        int prosperity_enabled = buffer_read_u8(buf);
+        int peace_enabled = buffer_read_u8(buf);
+        int favor_enabled = buffer_read_u8(buf);
+        int time_limit_enabled = buffer_read_i32(buf);
+        int time_limit = buffer_read_i32(buf);
+        int survival_time_enabled = buffer_read_i32(buf);
+        int survival_time_years = buffer_read_i32(buf);
+        if (culture_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_CULTURE, culture_goal, 0);
+        }
+        if (prosperity_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_PROSPERITY, prosperity_goal, 0);
+        }
+        if (peace_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_PEACE, peace_goal, 0);
+        }
+        if (favor_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_FAVOR, favor_goal, 0);
+        }
+        if (time_limit_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_TIME_LIMIT, time_limit, 0);
+        }
+        if (survival_time_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_SURVIVAL_YEARS, survival_time_years, 0);
+        }
+    }
+    else if (step == 2) {
+        int population_enabled = buffer_read_i32(buf);
+        int population_minimum = buffer_read_i32(buf);
+        if (population_enabled) {
+            scenario_criteria_try_add_or_update(WIN_CRITERIA_POPULATION_MINIMUM, population_minimum, 0);
+        }
+    }
 }
